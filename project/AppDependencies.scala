@@ -2,11 +2,16 @@ import play.core.PlayVersion
 import sbt._
 
 object AppDependencies {
+
+  val http4sVersion = "0.18.20"
+
   val compile = Seq(
-    "uk.gov.hmrc"       %% "govuk-template"    % "5.20.0",
-    "uk.gov.hmrc"       %% "play-ui"           % "7.17.0",
-    "uk.gov.hmrc"       %% "bootstrap-play-25" % "3.7.0",
-    "com.typesafe.play" %% "play-ws"           % "2.5.19" force ()
+    "uk.gov.hmrc"       %% "govuk-template"      % "5.20.0",
+    "uk.gov.hmrc"       %% "play-ui"             % "7.17.0",
+    "uk.gov.hmrc"       %% "bootstrap-play-25"   % "3.7.0",
+    "com.typesafe.play" %% "play-ws"             % "2.5.19" force (),
+    "org.http4s"        %% "http4s-dsl"          % http4sVersion,
+    "org.http4s"        %% "http4s-blaze-client" % http4sVersion
   )
 
   val test = Seq(

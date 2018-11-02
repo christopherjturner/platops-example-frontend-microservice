@@ -39,17 +39,19 @@ class Scheduler @Inject()(
     extends ServicesConfig {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
+  val blazeClient                = new BlazeClient
 
   def startScheduler(interval: FiniteDuration): Unit =
     if (runModeConfiguration.getBoolean("scheduler.enabled").getOrElse(false)) {
       Logger.info(s"Starting scheduler every $interval")
       val maxLatency = runModeConfiguration.getInt("max-latency-in-seconds").getOrElse(15)
       actorSystem.scheduler.schedule(FiniteDuration(1, TimeUnit.SECONDS), interval) {
-        (1 to 50).foreach { _ =>
+        (1 to 100).foreach { i =>
           val freq    = Random.nextInt(100)
-          val latency = if (freq <= 75) 0 else Random.nextInt(maxLatency)
-          val id      = UUID.randomUUID()
-          Logger.info(s"Starting a call with latency of $latency, id=$id")
+          val latency = 10
+//          val latency = if (freq <= 75) 0 else Random.nextInt(maxLatency)
+          val id = UUID.randomUUID()
+          Logger.info(s"Starting a call nr $i with latency of $latency, id=$id")
           httpClient
             .GET[HttpResponse](
               s"${baseUrl("platops-example-private-backend-microservice")}/example/hello-world/$latency?requestId=$id"
@@ -59,6 +61,15 @@ class Scheduler @Inject()(
               case Failure(exception) =>
                 Logger.info(s"Failure getting response for call id=$id", exception)
             }
+//          blazeClient
+//            .doGet(
+//              s"${baseUrl("platops-example-private-backend-microservice")}/example/hello-world/$latency?requestId=$id")
+//            .unsafeRunAsync {
+//              case Right(result) =>
+//                Logger.info(s"Got a response for call id=$id")
+//              case Left(exception) =>
+//                Logger.info(s"Failure getting response for call id=$id", exception)
+//            }
         }
       }
       ()

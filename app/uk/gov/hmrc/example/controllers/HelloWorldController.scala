@@ -17,21 +17,51 @@
 package uk.gov.hmrc.example.controllers
 
 import javax.inject.{Inject, Singleton}
-
+import org.slf4j.MDC
+import play.api.Logger
 import play.api.mvc._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import uk.gov.hmrc.example.config.AppConfig
 import uk.gov.hmrc.example.views
 
+import scala.collection.JavaConverters._
+
 @Singleton
-class HelloWorldController @Inject()(val messagesApi: MessagesApi, implicit val appConfig: AppConfig)
+class HelloWorldController @Inject()(val messagesApi: MessagesApi, implicit val appConfig: AppConfig, exampleService: ExampleService)(
+  ec: ExecutionContext)
     extends FrontendController
     with I18nSupport {
 
-  val helloWorld = Action.async { implicit request =>
-    Future.successful(Ok(views.html.hello_world()))
+  val helloWorld = Action { implicit request =>
+    println
+    Logger.warn(
+      s"Inside MicroserviceHelloWorld#hello, " +
+        s"thread: ${Thread.currentThread().getName}"
+    )
+
+    // setting MDC
+    MDC.put("newKeyAdded", "konrad")
+    exampleService.testingLogging()
+
+    println
+    Ok("Hello world - public zone")
+  }
+
+}
+
+class ExampleService @Inject()(implicit ec: ExecutionContext) {
+
+  def testingLogging(): Unit = {
+    println
+    Future {
+      Logger.warn(
+        s"Inside ExampleService#testingLogging, " +
+          s"thread: ${Thread.currentThread().getName}"
+      )
+    }
+    println
   }
 }
